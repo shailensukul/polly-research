@@ -63,3 +63,20 @@ However, the issue isn't really with HttpClient per se, but with the default con
 To address the issues mentioned above and to make HttpClient instances manageable, .NET Core 2.1 introduced two approaches, one of them being IHttpClientFactory. It's an interface that's used to configure and create HttpClient instances in an app through Dependency Injection (DI). It also provides extensions for Polly-based middleware to take advantage of delegating handlers in HttpClient.
 
 The alternative is to use SocketsHttpHandler with configured PooledConnectionLifetime. This approach is applied to long-lived, static or singleton HttpClient instances. 
+
+
+Registering the client services as shown in the next snippet, makes the DefaultClientFactory create a standard HttpClient for each service.
+The typed client is registered as transient with DI container.
+In the following code, AddHttpClient() registers ProductService as transient services so they can be injected and consumed directly without any need for additional registrations.
+```
+builder.Services.AddHttpClient<IProductService, ProductService>(client =>
+    {
+        client.BaseAddress = new Uri("http://localhost:5017");
+    })
+    .AddPolicyHandler(GetRetryPolicy())
+    .AddPolicyHandler(GetCustomPolicy())
+    .SetHandlerLifetime(TimeSpan.FromMinutes(5));;
+ ```
+Each time you get an HttpClient object from the IHttpClientFactory, a new instance is returned.
+But each HttpClient uses an HttpMessageHandler that's pooled and reused by the IHttpClientFactory to reduce resource consumption, as long as the HttpMessageHandler's lifetime hasn't expired.
+The default value is two minutes, but it can be overridden per Typed Client.
