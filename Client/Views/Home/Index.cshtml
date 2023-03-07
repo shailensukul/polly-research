@@ -1,0 +1,33 @@
+﻿@using System.Reflection
+@using Client.Model
+@{
+    ViewData["Title"] = "Home Page";
+    IEnumerable<SelectListItem> products = ViewBag.Products;
+    string error = ViewBag.Error;
+}
+
+<div class="text-center" xmlns="http://www.w3.org/1999/html">
+    <h1 class="display-4">Polly Demo</h1>
+    <div>
+        <div>
+            <label>Products: </label>
+            @Html.DropDownList("Products", products)
+        </div>
+        <br/>
+        <div>
+            <input type="button"
+                   value="Get Products"
+                   onclick="location.href='@Url.Action("GetProducts", "Home")'"/>
+        </div>
+        <br/>
+        <div>
+            <input type="button"
+                   value="Get Products (Resilient)"
+                   onclick="location.href='@Url.Action("GetProductsResilient", "Home")'"/>
+        </div>
+    </div>
+    <br/>
+    <div>
+        @Html.Label("", error)
+    </div>
+</div>
