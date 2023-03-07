@@ -68,6 +68,7 @@ The alternative is to use SocketsHttpHandler with configured PooledConnectionLif
 Registering the client services as shown in the next snippet, makes the DefaultClientFactory create a standard HttpClient for each service.
 The typed client is registered as transient with DI container.
 In the following code, AddHttpClient() registers ProductService as transient services so they can be injected and consumed directly without any need for additional registrations.
+
 ```
 builder.Services.AddHttpClient<IProductService, ProductService>(client =>
     {
@@ -77,6 +78,10 @@ builder.Services.AddHttpClient<IProductService, ProductService>(client =>
     .AddPolicyHandler(GetCustomPolicy())
     .SetHandlerLifetime(TimeSpan.FromMinutes(5));;
  ```
+
 Each time you get an HttpClient object from the IHttpClientFactory, a new instance is returned.
 But each HttpClient uses an HttpMessageHandler that's pooled and reused by the IHttpClientFactory to reduce resource consumption, as long as the HttpMessageHandler's lifetime hasn't expired.
 The default value is two minutes, but it can be overridden per Typed Client.
+
+A Typed Client is effectively a transient object, that means a new instance is created each time one is needed. It receives a new HttpClient instance each time it's constructed. However, the HttpMessageHandler objects in the pool are the objects that are reused by multiple HttpClient instances.
+
