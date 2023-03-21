@@ -36,7 +36,7 @@ public class HomeController : Controller
         HttpClient client = new HttpClient();
         client.BaseAddress = new Uri("http://localhost:5017/");
         IEnumerable<ProductContract> products = Array.Empty<ProductContract>();
-        HttpResponseMessage response = await client.GetAsync("/Product/GetWithRandomFailure");
+        HttpResponseMessage response = await client.GetAsync("/Product/v2/GetProducts");
         if (response.IsSuccessStatusCode)
         {
             ViewBag.Error = string.Empty;
@@ -54,7 +54,7 @@ public class HomeController : Controller
 
     public async Task<IActionResult> GetProductsResilient()
     {
-        var response = await _productService.GetProducts();
+        var response = await this._productService.GetProducts();
         if (response.HttpStatusCode == HttpStatusCode.OK)
         {
             ViewBag.Error = string.Empty;

@@ -5,7 +5,7 @@ using Unreliable_Service.Models;
 namespace Unreliable_Service.Controllers;
 
 [ApiController]
-[Route("[controller]/[action]")]
+[Produces("application/json")]
 public class ProductController : ControllerBase
 {
     private readonly ILogger<ProductController> _logger;
@@ -17,7 +17,8 @@ public class ProductController : ControllerBase
         this.context = context;
     }
 
-    [HttpGet(Name = "~/GetProducts")]
+    [HttpGet, Route("[controller]/v1/GetProducts")]
+    [ApiExplorerSettings(GroupName = "v1")]
     public IEnumerable<ProductContract> Get()
     {
         var products = from p in this.context.Products
@@ -25,10 +26,12 @@ public class ProductController : ControllerBase
         return products.ToArray();
     }
 
-    [HttpGet(Name = "~/GetProductsWithRandomFailure")]
+    [HttpGet, Route("[controller]/v2/GetProducts")]
+    [ApiExplorerSettings(GroupName = "v2")]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProductContract))]
-    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
-    public IActionResult GetWithRandomFailure()
+    [ProducesResponseType(typeof(ContentResult), StatusCodes.Status503ServiceUnavailable)]
+    [ProducesResponseType(typeof(ContentResult), 333 )]
+    public IActionResult GetV2()
     {
         var random = new Random().Next(1, 4);
         switch (random)

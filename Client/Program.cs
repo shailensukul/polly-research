@@ -24,7 +24,7 @@ builder.Services.AddHttpClient<IProductService, ProductService>(client =>
     })
     .AddPolicyHandler(GetRetryPolicy())
     .AddPolicyHandler(GetCustomPolicy(loggerFactory.CreateLogger("Custom")))
-    .SetHandlerLifetime(TimeSpan.FromMinutes(5));;
+    .SetHandlerLifetime(TimeSpan.FromMinutes(2));
 // Each time you get an HttpClient object from the IHttpClientFactory, a new instance is returned.
 // But each HttpClient uses an HttpMessageHandler that's pooled and reused by the IHttpClientFactory to reduce resource consumption, as long as the HttpMessageHandler's lifetime hasn't expired.
 //  The default value is two minutes, but it can be overridden per Typed Client.
@@ -61,6 +61,8 @@ static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
         .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 }
 
+
+// This custom policy handles a 333 error code
 static IAsyncPolicy<HttpResponseMessage> GetCustomPolicy(ILogger logger)
 {
     return Policy<HttpResponseMessage>.Handle<HttpRequestException>()
