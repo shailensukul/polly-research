@@ -8,16 +8,23 @@
 
 The solution has 2 projects.
 
-One is a Web API service which has 2 endpoints:
+### Unreliable-Service
 
-- `/Product/Get` - the "good" endpoint
-- `/Product/GetWithRandomFailure` - which succeeds once every 3 tries and fails other times with either a "service unavailable" error or a custom 333 = "weird error" error
+It is a Web API service which has 2 endpoints:
 
-![image](https://user-images.githubusercontent.com/564911/223391366-7298346a-6a4f-4492-a450-3bc7eddbde69.png)
+- `/Product/v1/GetProducts` - the "good" endpoint
+- `/Product/v2/GetProducts` - it  succeeds once every 3 tries and fails other times with either a "service unavailable" error or a custom 333 = "weird error" error
 
-The other project is an ASP.Net MVC app which tries to call the "bad" endpoint with and without a retry policy.
+## The "Good" API
+![image](/images/GoodService.JPG)
+
+### The "Bad" API
+![image](/images/BadService.JPG)
+
+## Client
+This is an ASP.Net MVC app which tries to fetch products by calling both the "bad" endpoint with and without a retry policy.
+
 The policies are defined in Program.cs against a typed HttpClient:
-
 
 ```
 builder.Services.AddHttpClient<IProductService, ProductService>(client =>
@@ -45,6 +52,7 @@ static IAsyncPolicy<HttpResponseMessage> GetCustomPolicy()
         .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 }
 ```
+The non-resiliet button calls the bad endpoint without any retry at all, so it should succeed around once every 3 tries.
 
 The reslient button leverages the policies above to automatically retry failures so it can provide a consitent and stable experience.
 
