@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Client.Model;
+using Polly;
 
 namespace Client.Service;
 
