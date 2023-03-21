@@ -10,8 +10,8 @@ The solution has 2 projects.
 
 One is a Web API service which has 2 endpoints:
 
-- /Product/Get - the "good" endpoint
-- /Product/GetWithRandom failure, which succeeds once every 3 tries and fails other times with either a "service unavailable" error or a custom 333 = "weird error" error
+- `/Product/Get` - the "good" endpoint
+- `/Product/GetWithRandomFailure` - which succeeds once every 3 tries and fails other times with either a "service unavailable" error or a custom 333 = "weird error" error
 
 ![image](https://user-images.githubusercontent.com/564911/223391366-7298346a-6a4f-4492-a450-3bc7eddbde69.png)
 
@@ -46,15 +46,15 @@ static IAsyncPolicy<HttpResponseMessage> GetCustomPolicy()
 }
 ```
 
-The reslient button leverages the policies above to automatically retry failures to provide a consitent and stable experience.
+The reslient button leverages the policies above to automatically retry failures so it can provide a consitent and stable experience.
 
 ![image](https://user-images.githubusercontent.com/564911/223392764-a481c61b-8e03-41a1-a4cd-4cb67403cde2.png)
 
 
 # Final Note
-This Microsoft article is worth a read when using 'HttpClient`(https://learn.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests)
+This Microsoft article is worth a read when using `HttpClient`(https://learn.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests)
 
-HttpClient is intended to be instantiated once and reused throughout the life of an application. Instantiating an HttpClient class for every request will exhaust the number of sockets available under heavy loads. That issue will result in SocketException errors. Possible approaches to solve that problem are based on the creation of the HttpClient object as singleton or static, as explained in this Microsoft article on HttpClient usage. This can be a good solution for short-lived console apps or similar, that run a few times a day.
+`HttpClient` is intended to be instantiated once and reused throughout the life of an application. Instantiating an HttpClient class for every request will exhaust the number of sockets available under heavy loads. That issue will result in SocketException errors. Possible approaches to solve that problem are based on the creation of the HttpClient object as singleton or static, as explained in this Microsoft article on HttpClient usage. This can be a good solution for short-lived console apps or similar, that run a few times a day.
 
 Another issue that developers run into is when using a shared instance of HttpClient in long-running processes. In a situation where the HttpClient is instantiated as a singleton or a static object, it fails to handle the DNS changes.
 
