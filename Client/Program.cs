@@ -18,12 +18,12 @@ var loggerFactory = LoggerFactory.Create(builder =>
 // Registering the client services as shown in the next snippet, makes the DefaultClientFactory create a standard HttpClient for each service.
 // The typed client is registered as transient with DI container.
 // In the following code, AddHttpClient() registers ProductService as transient services so they can be injected and consumed directly without any need for additional registrations.
-builder.Services.AddHttpClient<IProductService, ProductService>(client =>
+builder.Services.AddHttpClient<IProductServiceClient, ProductServiceClient>(client =>
     {
         client.BaseAddress = new Uri("http://localhost:5017");
     })
-    .AddPolicyHandler(GetRetryPolicy())
-    .AddPolicyHandler(IProductService.GetCustomPolicy(loggerFactory.CreateLogger("Custom")))
+    //.AddPolicyHandler(IProductServiceClient.GetRetryPolicy())
+    //.AddPolicyHandler(IProductServiceClient.GetCustomPolicy(loggerFactory.CreateLogger("Custom")))
     .SetHandlerLifetime(TimeSpan.FromMinutes(2));
 // Each time you get an HttpClient object from the IHttpClientFactory, a new instance is returned.
 // But each HttpClient uses an HttpMessageHandler that's pooled and reused by the IHttpClientFactory to reduce resource consumption, as long as the HttpMessageHandler's lifetime hasn't expired.
@@ -51,12 +51,3 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-
-static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-{
-    return HttpPolicyExtensions
-        // HTTP 5XX status codes (server errors)
-        .HandleTransientHttpError()
-        .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
-        .WaitAndRetryAsync(4, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-}

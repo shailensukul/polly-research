@@ -5,17 +5,19 @@ using Microsoft.AspNetCore.Mvc;
 using Client.Models;
 using Client.Service;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Polly;
+using System.Diagnostics.Tracing;
 
 namespace Client.Controllers;
 
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
-    private readonly IProductService _productService;
+    private readonly IProductServiceClient _productServiceClient;
 
-    public HomeController(ILogger<HomeController> logger, IProductService productService)
+    public HomeController(ILogger<HomeController> logger, IProductServiceClient productServiceClient)
     {
-        _productService = productService;
+        _productServiceClient = productServiceClient;
         _logger = logger;
     }
 
@@ -47,14 +49,15 @@ public class HomeController : Controller
             var reason = await response.Content.ReadAsStringAsync();
             ViewBag.Error = $"StatusCode: {response.StatusCode}\nReason:{reason}";
         }
-        ViewBag.Products = products.Select(p => new SelectListItem() { Value = p.Id.ToString(), Text = p.Description});
+        ViewBag.Products = products.Select(p => new SelectListItem() { Value = p.Id.ToString(), Text = p.Description });
 
         return View("Index");
     }
 
-    public async Task<IActionResult> GetProductsResilient()
+    public async Task<IActionResult> GetProductsResilient(CancellationToken cancellation)
     {
-        var response = await this._productService.GetProducts();
+        var response = await this._productServiceClient.GetProductsAsync(cancellation);
+
         if (response.HttpStatusCode == HttpStatusCode.OK)
         {
             ViewBag.Error = string.Empty;
@@ -64,8 +67,42 @@ public class HomeController : Controller
             ViewBag.Error = $"StatusCode: {response.HttpStatusCode}\nReason:{response.ReasonPhrase}";
         }
 
-        ViewBag.Products = response.Products.Select(p => new SelectListItem() { Value = p.Id.ToString(), Text = p.Description});
+        ViewBag.Products = response.Products.Select(p => new SelectListItem() { Value = p.Id.ToString(), Text = p.Description });
 
         return View("Index");
     }
+
+    /// <summary>
+    /// Create an asynchronouse request and then cancel it immediately after.
+    /// This should work by pressing the button a few times and watching the log for the cancelled message
+    /// </summary>
+    /// <param name="cancellation"></param>
+    /// <returns></returns>
+    public async Task<IActionResult> GetProductsResilientAndCancelRequest(CancellationToken cancellation)
+    {
+        CancellationTokenSource source = new CancellationTokenSource(50);
+        CancellationToken token = source.Token;
+
+        var responseAsync = this._productServiceClient.GetProductsAsync(token);
+        source.Cancel();
+
+        var response = responseAsync.Result;
+
+        if (response.HttpStatusCode == HttpStatusCode.OK)
+        {
+            ViewBag.Error = string.Empty;
+        }
+        else
+        {
+            ViewBag.Error = $"StatusCode: {response.HttpStatusCode}\nReason:{response.ReasonPhrase}";
+        }
+
+
+        ViewBag.Products = response.Products.Select(p => new SelectListItem() { Value = p.Id.ToString(), Text = p.Description });
+
+
+        return View("Index");
+
+    }
+
 }

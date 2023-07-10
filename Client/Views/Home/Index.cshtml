@@ -5,7 +5,18 @@
     IEnumerable<SelectListItem> products = ViewBag.Products;
     string error = ViewBag.Error;
 }
-
+@section Scripts
+    {
+    <script>
+        function ClearProducts() {
+            var selectElement = document.getElementById('Products');
+            var i, L = selectElement.options.length - 1;
+            for (i = L; i >= 0; i--) {
+                selectElement.remove(i);
+            }
+        }
+    </script>
+}
 <div class="text-center" xmlns="http://www.w3.org/1999/html">
     <h1 class="display-4">Polly Demo</h1>
     <div>
@@ -24,6 +35,12 @@
             <input type="button"
                    value="Get Products (Resilient)"
                    onclick="location.href='@Url.Action("GetProductsResilient", "Home")'"/>
+        </div>
+        <br />
+        <div>
+            <input type="button"
+                   value="Get Products (and cancel the cancellation token)"
+                   onclick="ClearProducts();location.href='@Url.Action("GetProductsResilientAndCancelRequest", "Home")'" />
         </div>
     </div>
     <br/>
