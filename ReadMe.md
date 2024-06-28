@@ -8,6 +8,11 @@
 
 The solution has 2 projects.
 
+They both have to be enabled in Configuration Manager.
+
+![image](https://github.com/shailensukul/polly-research/assets/564911/aba1bd59-6c1c-4b76-be33-39ecce18d84f)
+
+
 ### Unreliable-Service
 
 It is a Web API service which has 2 endpoints:
